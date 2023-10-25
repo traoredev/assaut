@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Inclure Tailwind CSS depuis un CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded shadow-md w-96">
+    
+    <h1 class="text-2xl font-semibold mb-4">Connexion Administrateur</h1>
+    <form id="adminLoginForm" class="space-y-4">
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur :</label>
+        <input type="text" id="username" name="username" class="w-full p-2 border rounded" required>
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe :</label>
+        <input type="password" id="password" name="password" class="w-full p-2 border rounded" required>
+      </div>
+      <button type="submit" class="w-full bg-blue-500 hover-bg-blue-700 text-white font-semibold py-2 rounded">
+        Se connecter
+      </button>
+      <a id="scanLink" href="InterfaceNumerisation.html" class="hidden bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 rounded mt-4">
+        Accéder à l'interface de numérisation
+      </a>
+      
+    </form>
+    <div id="loginMessage" class="text-red-500 mt-4"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('adminLoginForm');
+    const loginMessage = document.getElementById('loginMessage');
+    const scanLink = document.getElementById('scanLink');
+  
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+  
+      // Vérifiez ici les informations d'authentification
+      if (username === 'admin' && password === 'motdepasse') {
+        // Authentification réussie, vous pouvez afficher le lien vers l'interface de numérisation.
+        loginMessage.textContent = ''; // Effacez le message d'erreur
+        scanLink.classList.remove('hidden'); // Affichez le lien
+      } else {
+        // Authentification incorrecte, affichez un message d'erreur.
+        loginMessage.textContent = 'Nom d\'utilisateur ou mot de passe incorrect.';
+      }
+    });
+  </script>
+  </body>
+  </html>
+  
+
+  
+ 
+  <!--script>
+    const form = document.getElementById('adminLoginForm');
+    const loginMessage = document.getElementById('loginMessage');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      // Vérifiez ici les informations d'authentification
+      if (username === 'admin' && password === 'motdepasse') {
+        // Authentification réussie, vous pouvez rediriger ou afficher l'interface de numérisation ici.
+        loginMessage.textContent = ''; // Effacez le message d'erreur
+        alert('Authentification réussie ! Vous serez redirigé vers l\'interface de numérisation.');
+      } else {
+        // Authentification incorrecte, affichez un message d'erreur.
+        loginMessage.textContent = 'Nom d\'utilisateur ou mot de passe incorrect.';
+      }
+    });
+  </script-->
+</body>
+</html>

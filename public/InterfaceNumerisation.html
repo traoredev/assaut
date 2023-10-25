@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Inclure Tailwind CSS depuis un CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Styles personnalisés pour la page */
+    .scan-button {
+      background-color: #4CAF50;
+    }
+    .import-button {
+      background-color: #3498DB;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded shadow-md w-96">
+    <h1 class="text-2xl font-semibold mb-4">Interface de Numérisation</h1>
+
+    <!-- Bouton de numérisation -->
+    <button id="scanButton" class="scan-button hover:bg-green-700 text-white font-semibold py-2 px-4 rounded mt-2">
+      Scanner le code QR
+    </button>
+
+    <!-- Bouton d'importation -->
+    <button id="importButton" class="import-button hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mt-2">
+      Importer un code QR
+    </button>
+
+    <!-- Message d'erreur -->
+    <!--div id="errorMessage" class="text-red-500 mt-4"></div>
+ 
+    <div id="yourScannerContainer" style="width: 100%; height: 300px;"></div>
+
+  </div>
+
+  <!-- JavaScript pour gérer les boutons -->
+  <!--script src="node_modules/quagga@1.0.0/dist/quagga.min.js"></script-->
+  <script src="../node_modules/quagga/dist/quagga.min.js"></script>
+  <!--script src="node_modules/quagga/dist/quagga.min.js" type="application/javascript"></script-->
+
+
+  <script>
+    let dailyScanCount = 0;
+
+    const scanButton = document.getElementById('scanButton');
+    const scanResult = document.getElementById('scanResult');
+    const importButton = document.getElementById('importButton');
+    const errorMessage = document.getElementById('errorMessage');
+
+
+    async function demanderAccesCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    // Maintenant, la caméra est accessible dans le "stream".
+    // Vous pouvez lier ce flux à la caméra dans votre application.
+  } catch (error) {
+    console.error('Impossible d\'accéder à la caméra :', error);
+  }
+}
+
+  // Appeler demanderAccesCamera lorsque le bouton de numérisation est cliqué
+  scanButton.addEventListener('click', () => {
+    demanderAccesCamera(); // Appeler la fonction ici
+    // Autres actions pour numériser le code QR
+  });
+document.getElementById('startCameraButton').addEventListener('click', () => {
+  scanButton();
+});
+
+    // Compteur de scans journaliers
+    //let dailyScanCount = 0;
+
+    scanButton.addEventListener('click', () => {
+      // Logique pour la numérisation du code QR (à implémenter avec "quagga" ou "instascan")
+      // Ici, vous pouvez incrémenter dailyScanCount après chaque numérisation réussie.
+Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: document.querySelector('#yourScannerContainer'),
+        },
+        decoder: {
+          readers: ["code_128_reader", "ean_reader", "upc_reader", "code_39_reader"],
+        },
+      }, function (err) {
+        if (err) {
+          console.error(err);
+          scanResult.textContent = "Erreur lors de l'initialisation du scanner.";
+
+          //scanResult.textContent = 'Erreur lors de l'initialisation du scanner.';
+          return;
+        }
+        Quagga.start();
+      });
+
+      Quagga.onDetected(result => {
+        scanResult.textContent = 'Résultat : ' + result.codeResult.code;
+        Quagga.stop();
+      });
+    });
+      // Exemple :
+      if (dailyScanCount >= 2) {
+        errorMessage.textContent = 'Nombre de repas quotidiens atteint.';
+      } else {
+        errorMessage.textContent = '';
+        // Effectuez la numérisation et incrémentez dailyScanCount.
+        dailyScanCount++;
+      }
+
+    importButton.addEventListener('click', () => {
+      // Logique pour importer un code QR (à implémenter, par exemple, en chargeant un fichier QR depuis l'ordinateur de l'utilisateur).
+      // Vous pouvez également incrémenter dailyScanCount si un import réussit.
+
+      // Exemple :
+      if (dailyScanCount >= 2) {
+        errorMessage.textContent = 'Nombre de repas quotidiens atteint.';
+      } else {
+        errorMessage.textContent = '';
+        // Effectuez l'importation et incrémentez dailyScanCount.
+        dailyScanCount++;
+      }
+    });
+  </script>
+</body>
+</html>
+
+<!--DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ouvrir la caméra</title>
+</head>
+<body>
+    <button id="ouvrirCamera">Caméra</button>
+    <video id="cameraVideo" autoplay playsinline></video>
+
+    <script>
+        const ouvrirCameraButton = document.getElementById("ouvrirCamera");
+        const cameraVideo = document.getElementById("cameraVideo");
+
+        ouvrirCameraButton.addEventListener("click", async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraVideo.srcObject = stream;
+            } catch (error) {
+                console.error("Impossible d'accéder à la caméra :", error);
+            }
+        });
+    </script>
+</body>
+</html>
