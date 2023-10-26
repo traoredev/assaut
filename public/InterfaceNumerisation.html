@@ -2,14 +2,11 @@
 <html lang="en">
 <head>
   <!-- Inclure Tailwind CSS depuis un CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> 
   <style>
     /* Styles personnalisés pour la page */
     .scan-button {
       background-color: #4CAF50;
-    }
-    .import-button {
-      background-color: #3498DB;
     }
   </style>
 </head>
@@ -21,105 +18,58 @@
     <button id="scanButton" class="scan-button hover:bg-green-700 text-white font-semibold py-2 px-4 rounded mt-2">
       Scanner le code QR
     </button>
+     <!-- Conteneur pour la caméra (élément <video>) -->
+      <video id="yourScannerContainer" style="width: 100%; height: 300px;"></video>
 
-    <!-- Bouton d'importation -->
-    <button id="importButton" class="import-button hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mt-2">
-      Importer un code QR
-    </button>
 
-    <!-- Message d'erreur -->
-    <!--div id="errorMessage" class="text-red-500 mt-4"></div>
- 
     <div id="yourScannerContainer" style="width: 100%; height: 300px;"></div>
-
+    <div id="scanResult">Résultat de la numérisation : </div>
   </div>
 
-  <!-- JavaScript pour gérer les boutons -->
-  <!--script src="node_modules/quagga@1.0.0/dist/quagga.min.js"></script-->
-  <script src="../node_modules/quagga/dist/quagga.min.js"></script>
-  <!--script src="node_modules/quagga/dist/quagga.min.js" type="application/javascript"></script-->
+  <!--script src="src/instascan.min.js"></script-->
+  <script type="text/javascript" src="src/instascan.min.js"></script>
 
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.3/adapter.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.10/vue.min.js"></script>
+  <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 
   <script>
-    let dailyScanCount = 0;
-
     const scanButton = document.getElementById('scanButton');
     const scanResult = document.getElementById('scanResult');
-    const importButton = document.getElementById('importButton');
-    const errorMessage = document.getElementById('errorMessage');
 
+    let scanner = null;
 
-    async function demanderAccesCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    // Maintenant, la caméra est accessible dans le "stream".
-    // Vous pouvez lier ce flux à la caméra dans votre application.
-  } catch (error) {
-    console.error('Impossible d\'accéder à la caméra :', error);
-  }
-}
+    // Fonction pour démarrer le scanner Instascan
+    async function startScanner() {
+      try {
+        const cameras = await Instascan.Camera.getCameras();
+        if (cameras.length > 0) {
+          scanner = new Instascan.Scanner({ video: document.getElementById('yourScannerContainer') });
+          scanner.addListener('scan', function (content) {
+            scanResult.textContent = 'Résultat : ' + content;
+            stopScanner();
+            // Effectuez ici toute autre action nécessaire après la numérisation.
+          });
+          scanner.start(cameras[0]); // Vous pouvez changer l'index pour sélectionner la caméra arrière.
+        } else {
+          console.error('Aucune caméra disponible.');
+          scanResult.textContent = 'Aucune caméra disponible.';
+        }
+      } catch (error) {
+        console.error('Impossible d\'accéder à la caméra :', error);
+        scanResult.textContent = 'Impossible d\'accéder à la caméra : ' + error;
+      }
+    }
 
-  // Appeler demanderAccesCamera lorsque le bouton de numérisation est cliqué
-  scanButton.addEventListener('click', () => {
-    demanderAccesCamera(); // Appeler la fonction ici
-    // Autres actions pour numériser le code QR
-  });
-document.getElementById('startCameraButton').addEventListener('click', () => {
-  scanButton();
-});
-
-    // Compteur de scans journaliers
-    //let dailyScanCount = 0;
+    // Fonction pour arrêter le scanner
+    function stopScanner() {
+      if (scanner) {
+        scanner.stop();
+      }
+    }
 
     scanButton.addEventListener('click', () => {
-      // Logique pour la numérisation du code QR (à implémenter avec "quagga" ou "instascan")
-      // Ici, vous pouvez incrémenter dailyScanCount après chaque numérisation réussie.
-Quagga.init({
-        inputStream: {
-          name: "Live",
-          type: "LiveStream",
-          target: document.querySelector('#yourScannerContainer'),
-        },
-        decoder: {
-          readers: ["code_128_reader", "ean_reader", "upc_reader", "code_39_reader"],
-        },
-      }, function (err) {
-        if (err) {
-          console.error(err);
-          scanResult.textContent = "Erreur lors de l'initialisation du scanner.";
-
-          //scanResult.textContent = 'Erreur lors de l'initialisation du scanner.';
-          return;
-        }
-        Quagga.start();
-      });
-
-      Quagga.onDetected(result => {
-        scanResult.textContent = 'Résultat : ' + result.codeResult.code;
-        Quagga.stop();
-      });
-    });
-      // Exemple :
-      if (dailyScanCount >= 2) {
-        errorMessage.textContent = 'Nombre de repas quotidiens atteint.';
-      } else {
-        errorMessage.textContent = '';
-        // Effectuez la numérisation et incrémentez dailyScanCount.
-        dailyScanCount++;
-      }
-
-    importButton.addEventListener('click', () => {
-      // Logique pour importer un code QR (à implémenter, par exemple, en chargeant un fichier QR depuis l'ordinateur de l'utilisateur).
-      // Vous pouvez également incrémenter dailyScanCount si un import réussit.
-
-      // Exemple :
-      if (dailyScanCount >= 2) {
-        errorMessage.textContent = 'Nombre de repas quotidiens atteint.';
-      } else {
-        errorMessage.textContent = '';
-        // Effectuez l'importation et incrémentez dailyScanCount.
-        dailyScanCount++;
-      }
+      startScanner();
     });
   </script>
 </body>
@@ -149,5 +99,18 @@ Quagga.init({
             }
         });
     </script>
+    <script>
+  const ouvrirCameraButton = document.getElementById("ouvrirCamera");
+const cameraVideo = document.getElementById("cameraVideo");
+
+ouvrirCameraButton.addEventListener("click", async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        cameraVideo.srcObject = stream;
+    } catch (error) {
+        console.error("Impossible d'accéder à la caméra arrière :", error);
+    }
+});
+</script>    
 </body>
 </html>
