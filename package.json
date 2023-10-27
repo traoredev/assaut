@@ -10,7 +10,6 @@
   "dependencies": {
     "autoprefixer": "^10.4.16",
     "core-js": "^3.8.3",
-    "instascan": "^1.0.0",
     "postcss": "^8.4.31",
     "qrcode": "^1.5.3",
     "quagga": "^0.12.1",
