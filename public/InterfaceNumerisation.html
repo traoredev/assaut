@@ -1,117 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Inclure Tailwind CSS depuis un CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> 
-  <style>
-    /* Styles personnalisés pour la page */
-    .scan-button {
-      background-color: #4CAF50;
-    }
-  </style>
-</head>
-<body class="bg-gray-100 h-screen flex items-center justify-center">
-  <div class="bg-white p-8 rounded shadow-md w-96">
-    <h1 class="text-2xl font-semibold mb-4">Interface de Numérisation</h1>
-
-    <!-- Bouton de numérisation -->
-    <button id="scanButton" class="scan-button hover:bg-green-700 text-white font-semibold py-2 px-4 rounded mt-2">
-      Scanner le code QR
-    </button>
-     <!-- Conteneur pour la caméra (élément <video>) -->
-      <video id="yourScannerContainer" style="width: 100%; height: 300px;"></video>
-
-
-    <div id="yourScannerContainer" style="width: 100%; height: 300px;"></div>
-    <div id="scanResult">Résultat de la numérisation : </div>
-  </div>
-
-  <!--script src="src/instascan.min.js"></script-->
-  <script type="text/javascript" src="src/instascan.min.js"></script>
-
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.3/adapter.min.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.10/vue.min.js"></script>
-  <!--script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script-->
-
-  <script src="https://gist.githubusercontent.com/brunoinds/4466253d4ec667280074c6aa3bd2dd19/raw/871a09d0533fab04651de05a0d0e994f547ae60b/instascan.min.js"></script>
-  <script>
-    const scanButton = document.getElementById('scanButton');
-    const scanResult = document.getElementById('scanResult');
-
-    let scanner = null;
-
-    // Fonction pour démarrer le scanner Instascan
-    async function startScanner() {
-      try {
-        const cameras = await Instascan.Camera.getCameras();
-        if (cameras.length > 0) {
-          scanner = new Instascan.Scanner({ video: document.getElementById('yourScannerContainer') });
-          scanner.addListener('scan', function (content) {
-            scanResult.textContent = 'Résultat : ' + content;
-            stopScanner();
-            // Effectuez ici toute autre action nécessaire après la numérisation.
-          });
-          scanner.start(cameras[0]); // Vous pouvez changer l'index pour sélectionner la caméra arrière.
-        } else {
-          console.error('Aucune caméra disponible.');
-          scanResult.textContent = 'Aucune caméra disponible.';
-        }
-      } catch (error) {
-        console.error('Impossible d\'accéder à la caméra :', error);
-        scanResult.textContent = 'Impossible d\'accéder à la caméra : ' + error;
-      }
-    }
-
-    // Fonction pour arrêter le scanner
-    function stopScanner() {
-      if (scanner) {
-        scanner.stop();
-      }
-    }
-
-    scanButton.addEventListener('click', () => {
-      startScanner();
-    });
-  </script>
-</body>
-</html>
-
-<!--DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ouvrir la caméra</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="ZXing for JS">
+  <title>ZXing TypeScript | Decoding from camera stream</title>
+  <!-- Ajout de Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
-    <button id="ouvrirCamera">Caméra</button>
-    <video id="cameraVideo" autoplay playsinline></video>
+  <main class="wrapper p-8">
+    <section class="container" id="demo-content">
+      <h1 class="text-3xl font-semibold mb-4">Espace Administrateur</h1>
+      
+      <div class="mt-4">
+        <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" id="startButton">Start</a>
+        <a class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2" id="resetButton">Reset</a>
+      </div>
 
-    <script>
-        const ouvrirCameraButton = document.getElementById("ouvrirCamera");
-        const cameraVideo = document.getElementById("cameraVideo");
+      <div>
+        <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+      </div>
 
-        ouvrirCameraButton.addEventListener("click", async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                cameraVideo.srcObject = stream;
-            } catch (error) {
-                console.error("Impossible d'accéder à la caméra :", error);
+      <div id="sourceSelectPanel" class="mt-4">
+        <label for "sourceSelect" class="text-gray-600">Change video source:</label>
+        <select id="sourceSelect" class="max-w-xs px-2 py-1 border rounded border-gray-300 focus:outline-none focus:ring focus:ring-blue-300">
+        </select>
+      </div>
+
+      <div class="mt-4">
+        <label class="text-lg">Result:</label>
+        <div id="result" class="mt-2"></div>
+      </div>
+    </section>
+    <footer class="footer">
+      <section class="container">
+        <p>ZXing TypeScript Demo. Licensed under the <a class="text-blue-500 hover:underline" target="_blank" href="https://github.com/zxing-js/library#license" title="MIT">MIT</a>.</p>
+      </section>
+    </footer>
+  </main>
+  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+  <script type="text/javascript">
+    // const mysql = require('mysql'); // ou const mysql = require('mysql2'); si vous utilisez mysql2
+
+    // Configuration de la connexion à la base de données
+    // const db = mysql.createConnection({
+    //   host: 'localhost', // L'hôte de votre base de données
+    //   user: 'root', // Le nom d'utilisateur de la base de données
+    //   password: 'Anifatou-7', // Le mot de passe de la base de données
+    //   database: 'repasDB', // Le nom de votre base de données
+    // });
+
+    // Connexion à la base de données
+    // db.connect((err) => {
+    //   if (err) {
+    //     console.error('Erreur de connexion à la base de données :', err);
+    //     return;
+    //   }
+    //   console.log('Connecté à la base de données MySQL.');
+    // });
+
+    let selectedDeviceId;
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    console.log('ZXing code reader initialized');
+    let scans = 0;
+    const maxScans = 10; // Limite de numérisations
+    let scanningEnabled = true; // Autoriser la numérisation
+    const repasParNom = {}; // Pour stocker le nombre de repas par nom
+
+    document.getElementById('startButton').addEventListener('click', () => {
+      if (scanningEnabled && scans < maxScans) {
+        codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+          if (result) {
+            console.log(result);
+            const name = result.text;
+
+            // Vérifiez si le nom existe déjà dans la base de données
+            // ...
+
+            repasParNom[name] = (repasParNom[name] || 0) + 1; // Incrémente le nombre de repas pour ce nom
+            scans++;
+
+            const resultElement = document.getElementById('result');
+            const nameElement = document.createElement('div');
+            nameElement.textContent = name;
+            const repasElement = document.createElement('div');
+            repasElement.textContent = `Repas ${repasParNom[name]}`;
+            resultElement.innerHTML = '';
+            resultElement.appendChild(nameElement);
+            resultElement.appendChild(repasElement);
+
+            if (scans === maxScans) {
+              document.getElementById('startButton').disabled = true;
+              resultElement.textContent = 'Nombre de repas dépassé pour ce participant.';
+            } else {
+              setTimeout(() => {
+                enableScanning();
+              }, 5000); // Délai de 5 secondes
             }
+          }
+          if (err && !(err instanceof ZXing.NotFoundException)) {
+            console.error(err);
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = err;
+          }
         });
-    </script>
-    <script>
-  const ouvrirCameraButton = document.getElementById("ouvrirCamera");
-const cameraVideo = document.getElementById("cameraVideo");
+        console.log(`Started continuous decode from camera with id ${selectedDeviceId}`);
+      }
+      if (scans >= maxScans) {
+        const resultElement = document.getElementById('result');
+        resultElement.textContent = 'Nombre de repas dépassé pour ce participant.';
+      }
+    });
 
-ouvrirCameraButton.addEventListener("click", async () => {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        cameraVideo.srcObject = stream;
-    } catch (error) {
-        console.error("Impossible d'accéder à la caméra arrière :", error);
+    document.getElementById('resetButton').addEventListener('click', () => {
+      scans = 0;
+      scanningEnabled = true; // Activer la numérisation
+      document.getElementById('startButton').disabled = false;
+      const resultElement = document.getElementById('result');
+      resultElement.textContent = '';
+    });
+
+    codeReader.listVideoInputDevices()
+      .then((videoInputDevices) => {
+        const sourceSelect = document.getElementById('sourceSelect');
+        selectedDeviceId = videoInputDevices[0].deviceId;
+        if (videoInputDevices.length >= 1) {
+          videoInputDevices.forEach((element) => {
+            const sourceOption = document.createElement('option');
+            sourceOption.text = element.label;
+            sourceOption.value = element.deviceId;
+            sourceSelect.appendChild(sourceOption);
+          });
+          sourceSelect.onchange = () => {
+            selectedDeviceId = sourceSelect.value;
+          };
+          const sourceSelectPanel = document.getElementById('sourceSelectPanel');
+          sourceSelectPanel.style.display = 'block';
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    // Fonction pour activer la numérisation
+    function enableScanning() {
+      scanningEnabled = true;
     }
-});
-</script>    
+  </script>
 </body>
 </html>
